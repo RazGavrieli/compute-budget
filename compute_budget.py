@@ -1,7 +1,7 @@
 import logging as logger
 
 
-logger.basicConfig(level=logger.ERROR)
+logger.basicConfig(level=logger.INFO)
 class median_budget:
     def __init__(self, total_budget: float, citizen_votes: list[list], t=None):
         self.C = total_budget
@@ -16,9 +16,12 @@ class median_budget:
         for citizen in citizen_votes:
             for indexOfSubject, subjectVote in enumerate(citizen):
                 self.subjects[indexOfSubject].append(subjectVote)
-        for i in self.subjects:
-            i.sort()
-        logger.info("subjects before adding constant votes: %s", str(self.subjects))
+        for subject in self.subjects:
+            subject.sort()
+        if len(self.subjects) < 10:
+            logger.info("subjects before adding constant votes: %s", str(self.subjects))
+        else:
+            logger.info("skipping subject printing due to large size")
         self.medians = []
         self.choose_median()
         self.t = 0
@@ -34,7 +37,8 @@ class median_budget:
                 j.append(self.f(i+1, self.t))
         for i in self.subjects:
             i.sort()
-        logger.info("subjects after adding constant votes: %s", str(self.subjects))
+        if len(self.subjects) < 10:
+            logger.info("subjects after adding constant votes: %s", str(self.subjects))
         
         self.choose_median()
 
@@ -150,12 +154,23 @@ def compute_budget(total_budget: float, citizen_votes: list[list], t=None) -> li
 
 if __name__ == "__main__":
     import doctest
-    doctest.testmod()
+    #doctest.testmod()
 
     #compute_budget(100, [[100, 0, 0], [0, 0, 100]])
     #compute_budget(30, [[0, 0, 6, 0, 0, 6, 6, 6, 6], [0, 6, 0, 6, 6, 6, 6, 0, 0], [6,0 ,0, 6, 6, 0, 0, 6, 6]])
     #compute_budget(30, [[0, 0, 30], [15, 15 ,0], [15, 15, 0]])
 
-    print(compute_budget(100, [[100, 0, 0], [0, 100, 0], [0, 100, 0], [0, 100, 0], [0, 0, 100], [0, 0, 100],[0, 0, 100], [0, 0, 100],[0, 0, 100], [0, 0, 100]]))
+    #print(compute_budget(100, [[100, 0, 0], [0, 100, 0], [0, 100, 0], [0, 100, 0], [0, 0, 100], [0, 0, 100],[0, 0, 100], [0, 0, 100],[0, 0, 100], [0, 0, 100]]))
 
-
+    ## SMALL CITY EXAMPLE
+    import random
+    subjects=10 
+    budget=10_000
+    citizens = []
+    for i in range(100):
+        current_citizen = [0] * subjects
+        for j in range(budget) :
+            current_citizen[random.randint(0, random.randint(0, subjects-1))] += 1 # remove the inner random number to get P=1/subjects
+        citizens.append(current_citizen)
+    res = compute_budget(budget, citizens)
+    print(res, sum(res))
